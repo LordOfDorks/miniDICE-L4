@@ -1,0 +1,156 @@
+Run GenAuthorities.cmd to create the DiceAuthority and AppAuthority
+Install J-Link on Nucleo from (https://www.segger.com/downloads/jlink/STLinkReflash)
+Install J-Link tools for Windows (https://www.segger.com/downloads/jlink/JLink_Windows_V618d.exe) other flavors at https://www.segger.com/downloads/jlink/
+Install VisualStudio and build release flavor of DiceTool.exe
+Install Atollic TrueStudio Compile miniDICE and Sample
+Make sure the the last lines of Sample build look like this:
+..\..\DiceTool\Release\DiceTool.exe CAP Sample.hex -cf=..\..\AppAuthority.cer -lt=..\..\DiceAppTable.csv 
+AppName:          Sample
+Version           0.0
+Size:             392
+IssuanceDate:     1504306732 (0x59a9e62c)
+AppDigest:        6622f0d8977c8a253e0cfa322022446d37877adcd61716d994d8a7f6551b98c4
+AlternateDigest:  0000000000000000000000000000000000000000000000000000000000000000
+Signature.r:      1982392e004cb7ead9aebafe686a0cd52e610fb31385c2b12472bfd0301eb273
+Signature.s:      dac84c091adfb9f91d5f3498fe1c39db72625cdc54c07ca23ddeed4ccca166c2
+
+Erase the device with J-Flash light (STM32L476RG/SWD/2000)
+Program miniDICE\debug\miniDICE.hex with J-Flash light
+Use Device Manager-->Ports(COM&LPT) to look up the COM port for 'JLink CDC UART Port (COMxx)'
+Launch a terminal on COMxx 115200-8-n-1
+Launch J-Link SWO viewer and push the black button to reboot the device
+You should see this on SWO:
++++++++++++++++++++
+--> miniDICE-L4 <--
++++++++++++++++++++
+WARNING: Write access to option bytes disabled!
+INFO: Initializing.
+INFO: Generating new identity
+WARNING: The application area is NULL, we go directly to DFU mode!
+INFO: Reboot to exit DFU mode. Policy updates permitted.
+
+Get DeFUse from ST.com (http://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm32-software-development-tools/stm32-programmers/stsw-stm32080.html)
+Start DeFUse.exe and you should see miniDICE as a target
+Press chose in Upload Action and give the name miniDICE-L4/DiceID.dfu
+Press Upload to read the data
+Issue a device identity and set the application policy:
+DiceTool\Release\DiceTool.exe SIP DiceID.dfu -af=DiceAuthority.cer -cf=AppAuthority.cer -noClear
+You should see:
+Image in 1024 bytes
+Image out 1230 bytes
+
+Press Choose in Upgrade or Verify Action on DeFUse.exe and select DiceID-Auth.dfu
+Press Upgrade
+Press the black button when completed to reset the device
+You should now see this on SWO:
++++++++++++++++++++
+--> miniDICE-L4 <--
++++++++++++++++++++
+WARNING: Write access to option bytes disabled!
+INFO: Initializing.
+WARNING: The application area is NULL, we go directly to DFU mode!
+INFO: Firewall is UP!
+INFO: Reboot to exit DFU mode.
+
+Press Choose in Upgrade or Verify Action on DeFUse.exe and select binary package Sample\Release\Sample-1504306732-00000000-6622f0d8977c8a253e0cfa322022446d37877adcd61716d994d8a7f6551b98c4.DFU
+Press Upgrade
+Press the black button when completed to reset the device
+You should see this on SWO:
++++++++++++++++++++
+--> miniDICE-L4 <--
++++++++++++++++++++
+WARNING: Write access to option bytes disabled!
+INFO: Initializing.
+INFO: Rollback protection updated to Fri Sep  1 22:58:52 2017
+INFO: Firewall is UP!
+INFO: Preparing payload APP launch @0x08020200...
+øHello stderr
+Hello stderr
+Hello stderr
+Hello stderr
+
+and something this on COMxx:
+==========================
+    DICE APP: Sample!
+==========================
+DICE Certificate Bag(2002):
+-----BEGIN CERTIFICATE-----
+MIICzDCCAnGgAwIBAgIQPj8NbfNtTdP00Es+LcFzvDAKBggqhkjOPQQDAjA0MQsw
+CQYDVQQGEwJVUzENMAsGA1UECgwETVNGVDEWMBQGA1UEAwwNRGljZUF1dGhvcml0
+eTAeFw0xNzA5MDEyMzA2MTJaFw0zNzA5MDEyMzA2MTJaMC8xETAPBgNVBAMMCERJ
+Q0VDb3JlMQswCQYDVQQGDAJVUzENMAsGA1UECgwETVNGVDBZMBMGByqGSM49AgEG
+CCqGSM49AwEHA0IABGbKwpcMBDhbhJhQYcF3N/s6il//HhPUgfJKcCJIw09NoWP2
+5W6cdd5eaQZn6pXTh65do0QDU83kZj5tioVBm8ujggFoMIIBZDBpBgNVHQEEYjBg
+gBQjmXmG8aG+L+PKBJvZlF7bcDNCLKE2MDQxCzAJBgNVBAYTAlVTMQ0wCwYDVQQK
+DARNU0ZUMRYwFAYDVQQDDA1EaWNlQXV0aG9yaXR5ghBxgX3eKyTDk0R5EMMV/n+X
+MCkGA1UdDgQiBCCQI7P8MIqn3sm7AzD5jtr0YYlA/CTAWlBM+5tSMuW7KjASBgNV
+HRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwIBhjAUBgsrBgEEAYI3WQMBAgQF
+AgMBAAQwHgYLKwYBBAGCN1kDAQMEDxcNMTcwODE2MDAwMzQ1WjByBgsrBgEEAYI3
+WQMBBQRjMGGAFgQU3nkNUJLalydauwdoHENqoaRQUByhNTAzMQswCQYDVQQGEwJV
+UzENMAsGA1UECgwETVNGVDEVMBMGA1UEAwwMQXBwQXV0aG9yaXR5ghAYfUT0Ubf+
+pUZ5HcfBh5NXMAoGCCqGSM49BAMCA0kAMEYCIQDULQqRcWZBXkT+UA2nNLohmYdn
+oSrIRtr24BOayuJpcgIhANCd3LGvrd5sUHNSwruOSUf8eK0DpV/Qw3Y75WXcqTrS
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIICiTCCAjCgAwIBAgIQBtx0uWTyaEi2H0x1dcxk2TAKBggqhkjOPQQDAjAvMREw
+DwYDVQQDDAhESUNFQ29yZTELMAkGA1UEBgwCVVMxDTALBgNVBAoMBE1TRlQwHhcN
+MTcwMTAxMDAwMDAwWhcNMzcxMjMxMDAwMDAwWjAtMRAwDgYDVQQDDAdESUNFQXBw
+MQswCQYDVQQGDAJVUzEMMAoGA1UECgwDT0VNMFkwEwYHKoZIzj0CAQYIKoZIzj0D
+AQcDQgAE5P/VQKeRrPFvokipxwVIq5PXq/kaHkVbplqIFR1ivTk9tQi6Dp3IhMeH
+CkQERBgXQm+dCYeBhVmGOuOloGVBh6OCAS4wggEqMCsGA1UdAQQkMCKAIJAjs/ww
+iqfeybsDMPmO2vRhiUD8JMBaUEz7m1Iy5bsqMCkGA1UdDgQiBCBlk6u2zIRAhcMX
+Xy771XB6EbqDuEJfKpC397Bpp0PFNDAPBgNVHRMBAf8EBTADAQEAMA4GA1UdDwEB
+/wQEAwIF4DAgBgNVHSUBAf8EFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwEwYLKwYB
+BAGCN1kDAQoEBAICAYgwEQYLKwYBBAGCN1kDAQkEAgIAMB4GCysGAQQBgjdZAwEL
+BA8XDTE3MDkwMTIyNTg1MlowMQYLKwYBBAGCN1kDAQcEIgQgZiLw2Jd8iiU+DPoy
+ICJEbTeHetzWFxbZlNin9lUbmMQwEgYLKwYBBAGCN1kDAQwEAwIBBzAKBggqhkjO
+PQQDAgNHADBEAiBo+s7T27Cs0iXVaAe1uoqXx8CxfeypoWaYM+VKf/25nQIgOzUU
+hzkAX8pVeJZMDCKXsghqlQBg13K3HusGfdkjyUY=
+-----END CERTIFICATE-----
+
+(006)
+
+OK
+(2028)
++CWLAP:(3,"MSFTWPHONE_TEST",-71,"70:3a:0e:16:37:e0",1,32767,0)
++CWLAP:(0,"MSFTGUEST",-71,"70:3a:0e:16:3a:24",1,32767,0)
++CWLAP:(0,"mlotfy-net",-88,"20:aa:4b:89:de:3e",1,15,0)
++CWLAP:(4,"connector1021",-81,"02:18:4a:a1:dd:80",1,18,0)
++CWLAP:(5,"MSFTCORP",-71,"70:3a:0e:16:37:e2",1,32767,0)
++CWLAP:(3,"MSFTDEV",-70,"70:3a:0e:16:37:e3",1,32767,0)
++CWLAP:(0,"MSFTGUEST",-71,"70:3a:0e:16:37:e4",1,32767,0)
++CWLAP:(3,"MSFTWPHONE_TEST",-72,"70:3a:0e:16:3a:20",1,32767,0)
++CWLAP:(5,"MSFTCORP",-72,"70:3a:0e:16:3a:22",1,32767,0)
++CWLAP:(3,"MSFTDEV",-72,"70:3a:0e:16:3a:23",1,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB29ED3C",-85,"ba:27:eb:29:e5:3c",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB7465DA",-71,"ba:27:eb:74:6d:da",11,32767,0)
++CWLAP:(3,"DIRECT-GMSHIWHUBmsXI",-85,"f2:03:8c:1c:05:4c",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EBED4D3B",-74,"ba:27:eb:ed:45:3b",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EBB13271",-74,"ba:27:eb:b1:3a:71",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB03BB1C",-70,"ba:27:eb:03:b3:1c",11,32767,0)
++CWLAP:(3,"island-009D30",-89,"74:3e:2b:40:9d:33",11,-14,0)
++CWLAP:(4,"summitmini",-86,"14:e6:e4:ec:cf:40",11,3,0)
++CWLAP:(0,"miracast-test-G",-54,"00:23:69:de:23:1e",6,-4,0)
++CWLAP:(0,"MGS_2",-75,"00:23:97:1b:da:5c",6,-14,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB9E7D3E",-66,"ba:27:eb:9e:75:3e",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB4FA1A0",-72,"ba:27:eb:4f:a9:a0",11,32767,0)
++CWLAP:(4,"4GCommunityWiFi",-65,"f4:63:49:24:fe:9e",11,20,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EBB6EE33",-75,"ba:27:eb:b6:e6:33",11,32767,0)
++CWLAP:(3,"MSFTWPHONE_TEST",-57,"70:3a:0e:16:39:80",11,32767,0)
++CWLAP:(5,"MSFTCORP",-55,"70:3a:0e:16:39:82",11,32767,0)
++CWLAP:(3,"MSFTDEV",-55,"70:3a:0e:16:39:83",11,32767,0)
++CWLAP:(0,"MSFTGUEST",-54,"70:3a:0e:16:39:84",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EB63031A",-65,"ba:27:eb:63:0b:1a",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EBEB3BB1",-78,"ba:27:eb:eb:33:b1",11,32767,0)
++CWLAP:(3,"AJ_SoftAPSsid_B827EBC000D6",-87,"ba:27:eb:c0:08:d6",11,32767,0)
+
+OK
+Hello stdio
+Hello stdio
+
+Hold blue update button and briefly press black reset button - wait a second and release blue button
+Press chose in Upload Action and give the name miniDICE-L4/DiceID.dfu
+Press Upload to read the data
+Extract the certificate store with:
+DiceTool\Release\DiceTool.exe ECP DiceID.dfu
+Call 'start DiceID.p7b' to open the cert store.
