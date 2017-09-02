@@ -3,6 +3,9 @@
 *.p7b
 *.pem
 *.exe
+*.elf
+*.list
+*.su
 *.csv
 *.sdf
 *.enc
@@ -38,7 +41,9 @@ jlinksettings.ini
 *.uvguix.*
 *.iex
 .vs
+!DiceTool/Release/STDFUFiles.dll
 miniDICE/Release/*
 miniDICE/Debug/*
-Payload/Release/*
-Payload/Debug/*
+Sample/Release/*
+Sample/Debug/*
+

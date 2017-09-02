@@ -1,7 +1,7 @@
 Run GenAuthorities.cmd to create the DiceAuthority and AppAuthority
 Install J-Link on Nucleo from (https://www.segger.com/downloads/jlink/STLinkReflash)
 Install J-Link tools for Windows (https://www.segger.com/downloads/jlink/JLink_Windows_V618d.exe) other flavors at https://www.segger.com/downloads/jlink/
-Install VisualStudio and build release flavor of DiceTool.exe
+Install VisualStudio and build x86 release flavor of DiceTool.exe
 Install Atollic TrueStudio Compile miniDICE and Sample
 Make sure the the last lines of Sample build look like this:
 ..\..\DiceTool\Release\DiceTool.exe CAP Sample.hex -cf=..\..\AppAuthority.cer -lt=..\..\DiceAppTable.csv 

@@ -1,7 +1,0 @@
-socket.c:46:26:ESP8266GetResponse	312	static
-socket.c:82:19:GetNet	216	static
-socket.c:118:19:InitializeESP8266	32	static
-socket.c:193:19:SocketOpen	176	static
-socket.c:225:19:SocketClose	24	static
-socket.c:243:19:SocketSend	40	static
-socket.c:281:20:SocketReceive	80	static
