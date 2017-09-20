@@ -165,6 +165,31 @@ static DICE_STATUS DiceWriteData(uint32_t* destination, uint32_t* dataWords, uin
     return DICE_SUCCESS;
 }
 
+void DiceAddCertToBag(
+        DERBuilderContext *context,
+        char* certBag,
+        uint32_t* certBagLen
+        )
+{
+    // Size check
+    int newCertLen = DERtoPEM(context, 0, NULL, 0);
+
+    // Make room at the top
+    for(int n = *certBagLen; n > -1; n--)
+    {
+        DICERAMAREA->info.certBag[n + newCertLen] = DICERAMAREA->info.certBag[n];
+    }
+
+    // Insert the new cert
+    DERtoPEM(context,
+             0,
+             certBag,
+             newCertLen);
+
+    // Return new bag length
+    *certBagLen += newCertLen;
+}
+
 DICE_STATUS DiceInitialize(void)
 {
     DICE_STATUS retVal = DICE_SUCCESS;
@@ -182,7 +207,7 @@ DICE_STATUS DiceInitialize(void)
     if((manualReprovision) || (DICEFUSEAREA->magic != DICEMAGIC))
     {
         EPRINTF("INFO: Generating new identity\r\n");
-        // Initilaize the staging area
+        // Initialize the staging area
         uint32_t* stagingBuffer = (uint32_t*)malloc(DICEFUSEDATASIZE);
         if(stagingBuffer == NULL)
         {
@@ -197,7 +222,8 @@ DICE_STATUS DiceInitialize(void)
         staging->info.rollBackProtection = 0;
         staging->info.properties.noClear = 0;
         staging->info.bootCounter = 0;
-        staging->info.certBagLen = DICEFUSEDATASIZE - sizeof(DicePersistedData_t) + 1;
+        staging->info.certBagLen = 1;
+        staging->info.certBag[0] = 0;
         Dice_GenerateDSAKeyPair(&staging->info.devicePub, &staging->devicePrv);
 
         // Generate a selfsigned device cert
@@ -233,7 +259,10 @@ DICE_STATUS DiceInitialize(void)
         uint32_t* pProperties = (uint32_t*)&staging->info.properties;
         X509MakeDeviceCert(&cerCtx, DICEVERSION, DICETIMESTAMP, *pProperties, NULL);
         X509CompleteCert(&cerCtx, &x509DeviceCertData);
-        staging->info.certBagLen = DERtoPEM(&cerCtx, 0, staging->info.certBag, staging->info.certBagLen);
+
+        DiceAddCertToBag(&cerCtx, staging->info.certBag, &staging->info.certBagLen);
+
+//        staging->info.certBagLen = DERtoPEM(&cerCtx, 0, staging->info.certBag, staging->info.certBagLen);
         
         staging->info.size = sizeof(DicePublicInfo_t) - 1 + staging->info.certBagLen;
         staging->info.dontTouchSize = (((sizeof(DicePersistedData_t) - 1 + staging->info.certBagLen + 0xFF) / 0x100) * 0x100);
@@ -349,7 +378,7 @@ DICE_STATUS DiceInitialize(void)
                                                  },
                                                  1483228800, 2145830400,
                                                  {{0},
-                                                  "DICEApp", "OEM", "US",
+                                                  DICEAPPHDR->s.sign.name, NULL, NULL,
                                                   &DICERAMAREA->compoundPub, &DICERAMAREA->compoundPrv
                                                  }};
         Dice_KDF_SHA256_Seed(x509DeviceCertData.Issuer.CertSerialNum,
@@ -381,10 +410,8 @@ DICE_STATUS DiceInitialize(void)
         X509MakeCertBody(&cerCtx, &x509DeviceCertData);
         X509MakeCompoundCert(&cerCtx, &DICERAMAREA->info, DICEAPPHDR);
         X509CompleteCert(&cerCtx, &x509DeviceCertData);
-        DICERAMAREA->info.certBagLen += DERtoPEM(&cerCtx,
-                                                 0,
-                                                 &DICERAMAREA->info.certBag[DICERAMAREA->info.certBagLen],
-                                                 DICERAMDATASIZE - ((uint32_t)&DICERAMAREA->info.certBag[DICERAMAREA->info.certBagLen] - DICERAMSTART));
+
+        DiceAddCertToBag(&cerCtx, DICERAMAREA->info.certBag, &DICERAMAREA->info.certBagLen);
         DICERAMAREA->info.size = sizeof(DicePublicInfo_t) - 1 + DICERAMAREA->info.certBagLen;
     }
 

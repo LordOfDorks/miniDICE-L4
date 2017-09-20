@@ -90,19 +90,20 @@ void DicePrintInfo(void)
     }
     EPRINTF("\r\nProtectedFLASH:     0x%04lx@0x%08lx", DICERAMAREA->info.dontTouchSize, (uint32_t)DICEDATASTART);
     EPRINTF("\r\nOccupiedRAM:        0x%04lx@0x%08lx", sizeof(DiceData_t) - 1 + DICERAMAREA->info.certBagLen, (uint32_t)DICERAMSTART);
+    EPRINTF("\r\n");
 
-    DERInitContext(&cerCtx, num, sizeof(num));
-    DERGetEccPub(&cerCtx, &DICERAMAREA->info.devicePub);
-    pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
-    EPRINTF("\r\nDevicePub(%lu):\r\n%s", pemSize, pem);
+//    DERInitContext(&cerCtx, num, sizeof(num));
+//    DERGetEccPub(&cerCtx, &DICERAMAREA->info.devicePub);
+//    pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
+//    EPRINTF("DevicePub(%lu):\r\n%s", pemSize, pem);
 
-    if(!DiceNullCheck(&DICERAMAREA->info.authorityPub, sizeof(DICERAMAREA->info.authorityPub)))
-    {
-        DERInitContext(&cerCtx, num, sizeof(num));
-        DERGetEccPub(&cerCtx, &DICERAMAREA->info.authorityPub);
-        pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
-        EPRINTF("AuthorityPub(%lu):\r\n%s", pemSize, pem);
-    }
+//    if(!DiceNullCheck(&DICERAMAREA->info.authorityPub, sizeof(DICERAMAREA->info.authorityPub)))
+//    {
+//        DERInitContext(&cerCtx, num, sizeof(num));
+//        DERGetEccPub(&cerCtx, &DICERAMAREA->info.authorityPub);
+//        pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
+//        EPRINTF("AuthorityPub(%lu):\r\n%s", pemSize, pem);
+//    }
 
     if(DICERAMAREA->info.certBagLen > 0)
     {
@@ -123,18 +124,19 @@ void DicePrintInfo(void)
         EPRINTFHEXSTRING(DICEAPPHDR->s.sign.appDigest, sizeof(DICEAPPHDR->s.sign.appDigest));
         EPRINTF("\r\nAlternateDigest:    0x");
         EPRINTFHEXSTRING(DICEAPPHDR->s.sign.alternateDigest, sizeof(DICEAPPHDR->s.sign.alternateDigest));
-        DERInitContext(&cerCtx, num, sizeof(num));
-        DERGetEccPub(&cerCtx, &DICERAMAREA->compoundPub);
-        pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
-        EPRINTF("\r\nCompoundPub(%lu):\r\n%s", pemSize, pem);
-        if(!DiceNullCheck(&DICERAMAREA->alternatePub, sizeof(DICERAMAREA->alternatePub)))
-        {
-            DERInitContext(&cerCtx, num, sizeof(num));
-            DERGetEccPub(&cerCtx, &DICERAMAREA->alternatePub);
-            pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
-            EPRINTF("AlternatePub(%lu):\r\n%s", pemSize, pem);
-        }
-        EPRINTF("=====END APPLICATION=====\r\n");
+        EPRINTF("\r\n");
+//        DERInitContext(&cerCtx, num, sizeof(num));
+//        DERGetEccPub(&cerCtx, &DICERAMAREA->compoundPub);
+//        pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
+//        EPRINTF("CompoundPub(%lu):\r\n%s", pemSize, pem);
+//        if(!DiceNullCheck(&DICERAMAREA->alternatePub, sizeof(DICERAMAREA->alternatePub)))
+//        {
+//            DERInitContext(&cerCtx, num, sizeof(num));
+//            DERGetEccPub(&cerCtx, &DICERAMAREA->alternatePub);
+//            pemSize = DERtoPEM(&cerCtx, 1, pem, sizeof(pem));
+//            EPRINTF("AlternatePub(%lu):\r\n%s", pemSize, pem);
+//        }
+        EPRINTF("=====END APPLICATION=====\r\n\r\n");
     }
 }
 

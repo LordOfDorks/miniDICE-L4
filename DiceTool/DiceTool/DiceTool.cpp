@@ -1601,12 +1601,10 @@ void GenerateCertSample(
     }
     pemRoot.resize(pemRoot.size() - 1);
 
-    std::string pemChain(pemBuffer2.data(), &pemBuffer2.data()[pemBuffer2.size() - 1]);
-    pemChain.append("\n");
-    pemChain += std::string(pemBuffer1.data(), &pemBuffer1.data()[pemBuffer1.size() - 1]);
-    pemChain.append("\n");
+    std::string pemChain(pemBuffer2.data(), &pemBuffer2.data()[pemBuffer2.size()]);
+    pemChain += std::string(pemBuffer1.data(), &pemBuffer1.data()[pemBuffer1.size()]);
     pemChain += pemRoot;
-    pemChain += std::string(pemBuffer3.data(), &pemBuffer3.data()[pemBuffer3.size() - 1]);
+    pemChain += std::string(pemBuffer3.data(), &pemBuffer3.data()[pemBuffer3.size()]);
     pemChain.append("\n\0");
 
     std::vector<BYTE> pubX(32, 0);

@@ -168,6 +168,8 @@ int dice_main(void)
       Error_Handler();
   }
 
+  DicePrintInfo();
+
   // The point of no return: Launch the application
   EPRINTF("INFO: Preparing payload APP launch @0x%08x...\r\n\r\n", DICEAPPENTRY);
   // Release the clock source
